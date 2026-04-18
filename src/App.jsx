@@ -1,32 +1,11 @@
-
-import React, {useEffect, useState} from 'react'
-export default function App(){
- const [records,setRecords]=useState([]);
- const [search,setSearch]=useState('');
- const [form,setForm]=useState({name:'',date:'',hymns:'',status:'Está bom',notes:''});
- useEffect(()=>{const s=localStorage.getItem('violin_records'); if(s) setRecords(JSON.parse(s));},[]);
- useEffect(()=>{localStorage.setItem('violin_records',JSON.stringify(records));},[records]);
- const save=()=>{ if(!form.name) return; setRecords([{...form,id:Date.now()},...records]); setForm({name:'',date:'',hymns:'',status:'Está bom',notes:''});}
- const remove=(id)=>setRecords(records.filter(r=>r.id!==id));
- const filtered=records.filter(r=>r.name.toLowerCase().includes(search.toLowerCase()));
- return <div style={{fontFamily:'Arial',padding:20,maxWidth:900,margin:'auto'}}>
- <h1>Controle de Aulas de Violino 🎻</h1>
- <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20}}>
- <div>
- <input placeholder='Aluno' value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/><br/><br/>
- <input type='date' value={form.date} onChange={e=>setForm({...form,date:e.target.value})}/><br/><br/>
- <textarea placeholder='Hinos' value={form.hymns} onChange={e=>setForm({...form,hymns:e.target.value})}></textarea><br/><br/>
- <select value={form.status} onChange={e=>setForm({...form,status:e.target.value})}>
- <option>Está bom</option><option>Precisa estudar mais</option><option>Não está bom</option></select><br/><br/>
- <textarea placeholder='Observações' value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})}></textarea><br/><br/>
- <button onClick={save}>Salvar Aula</button>
- </div>
- <div>
- <input placeholder='Buscar aluno' value={search} onChange={e=>setSearch(e.target.value)}/><hr/>
- {filtered.map(r=><div key={r.id} style={{border:'1px solid #ccc',padding:10,margin:'10px 0'}}>
- <b>{r.name}</b> ({r.date})<br/>
- Hinos: {r.hymns}<br/>Status: {r.status}<br/>Obs: {r.notes}<br/>
- <button onClick={()=>remove(r.id)}>Excluir</button>
- </div>)}
- </div></div></div>
-}
+import { useState, useEffect } from 'react';
+export default function ViolinBlog(){
+const [records,setRecords]=useState([]);
+const [search,setSearch]=useState('');
+const [form,setForm]=useState({name:'',date:'',hymns:'',status:'Está bom',notes:''});
+useEffect(()=>{const saved=localStorage.getItem('violin_records');if(saved)setRecords(JSON.parse(saved));},[]);
+useEffect(()=>{localStorage.setItem('violin_records',JSON.stringify(records));},[records]);
+const update=(k,v)=>setForm({...form,[k]:v});
+const save=()=>{if(!form.name)return;setRecords([{...form,id:Date.now()},...records]);setForm({name:'',date:'',hymns:'',status:'Está bom',notes:''});};
+const remove=(id)=>setRecords(records.filter(r=>r.id!==id));
+return (<div className='min-h-screen bg-slate-950 text-white p-6 font-sans'><div className='max-w-6xl mx-auto space-y-6'><div className='grid md:grid-cols-3 gap-4'><div className='md:col-span-2'><h1 className='text-5xl font-black tracking-tight'>Controle de Aulas de Violino 🎻</h1><p className='text-slate-400 mt-2'>Dashboard moderno para acompanhar seus alunos no PC ou celular.</p></div><div className='grid grid-cols-2 gap-3'><div className='bg-slate-900 rounded-2xl p-4'><p className='text-slate-400 text-sm'>Alunos</p><p className='text-3xl font-bold'>{records.length}</p></div><div className='bg-slate-900 rounded-2xl p-4'><p className='text-slate-400 text-sm'>Registros</p><p className='text-3xl font-bold'>{records.length}</p></div></div></div><div className='grid lg:grid-cols-2 gap-6'><div className='bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-6 space-y-3'><h2 className='text-xl font-semibold text-white'>Nova Aula</h2><input value={form.name} onChange={e=>update('name',e.target.value)} className='w-full bg-slate-800 border border-slate-700 text-white rounded-2xl p-3' placeholder='Nome do aluno' /><input type='date' value={form.date} onChange={e=>update('date',e.target.value)} className='w-full border rounded-xl p-2' /><textarea value={form.hymns} onChange={e=>update('hymns',e.target.value)} className='w-full border rounded-xl p-2 h-24' placeholder='Hinos passados (ex: 12, 45, 78)' /><select value={form.status} onChange={e=>update('status',e.target.value)} className='w-full border rounded-xl p-2'><option>Está bom</option><option>Precisa estudar mais</option><option>Não está bom</option></select><textarea value={form.notes} onChange={e=>update('notes',e.target.value)} className='w-full border rounded-xl p-2 h-24' placeholder='Observações' /><button onClick={save} className='w-full px-4 py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition'>Salvar Aula</button></div><div className='bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-6'><div className='flex justify-between gap-3 mb-4 items-center'><h2 className='text-xl font-semibold text-white'>Histórico</h2><input value={search} onChange={e=>setSearch(e.target.value)} placeholder='Buscar aluno' className='bg-slate-800 border border-slate-700 rounded-2xl p-3 text-sm text-white' /></div><div className='space-y-3 max-h-[600px] overflow-auto'>{records.length===0 && <p className='text-slate-400'>Nenhuma aula cadastrada ainda.</p>}{records.filter(r=>r.name.toLowerCase().includes(search.toLowerCase())).map(r=><div key={r.id} className='border border-slate-800 bg-slate-800/60 rounded-2xl p-4 space-y-1 hover:bg-slate-800 transition'><div className='flex justify-between gap-3'><p className='font-semibold'>{r.name}</p><button onClick={()=>remove(r.id)} className='text-sm text-red-500'>Excluir</button></div><p className='text-sm text-slate-400'>{r.date}</p><p><span className='font-medium'>Hinos:</span> {r.hymns}</p><p><span className='font-medium'>Status:</span> {r.status}</p><p><span className='font-medium'>Obs:</span> {r.notes || 'Sem observações'}</p></div>)}</div></div></div></div></div>)}
